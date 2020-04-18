@@ -14,7 +14,7 @@ QUnit.module('Koalition Controller', function (hooks) {
   let router: ControllerRouter;
 
   hooks.beforeEach(async function () {
-    app = Koalition({ logger: false });
+    app = Koalition();
     router = new ControllerRouter({ controllers: [BooksController] });
     router.resources('books', { only: ['show'] });
     app.use(router.routes());

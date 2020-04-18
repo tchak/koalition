@@ -1,4 +1,4 @@
-import Koa from 'koa';
+import Koa, { Middleware, Context, ParameterizedContext, Next } from 'koa';
 import qs from 'koa-qs';
 
 import bodyParser, { Options as BodyParserOptions } from 'koa-bodyparser';
@@ -8,6 +8,8 @@ import cors, { Options as CorsOptions } from '@koa/cors';
 import logger from 'koa-logger';
 import etag from 'koa-etag';
 import conditional from 'koa-conditional-get';
+
+export { Koa, Middleware, Context, ParameterizedContext, Next };
 
 export interface ErrorResponse {
   status: number;
@@ -31,7 +33,27 @@ const DEFAULT_BODY_PARSER_OPTIONS: BodyParserOptions = {
   enableTypes: ['json'],
 };
 
-export { Koa };
+const environement = process.env.NODE_ENV || 'development';
+const isTest = environement === 'test';
+const isDevelopment = environement === 'development';
+
+function useLogger(option?: boolean): boolean {
+  if (option === true) {
+    return true;
+  } else if (option === false) {
+    return false;
+  }
+  return !isTest;
+}
+
+function useEtag(option?: boolean): boolean {
+  if (option === true) {
+    return true;
+  } else if (option === false) {
+    return false;
+  }
+  return !isDevelopment;
+}
 
 export default function Koalition(options?: KoalitionOptions): Koa {
   const app = new Koa();
@@ -45,17 +67,17 @@ export default function Koalition(options?: KoalitionOptions): Koa {
         await next();
       } catch (err) {
         Object.assign(ctx, errorHandler(err));
+
+        ctx.app.emit('error', err, ctx);
       }
     });
   }
 
-  const useLogger = (options && options.logger) !== false;
   const useHelmet = (options && options.helmet) !== false;
   const useCors = (options && options.cors) !== false;
-  const useEtag = (options && options.etag) !== false;
   const useResponseTime = (options && options.responseTime) !== false;
 
-  if (useLogger) {
+  if (useLogger(options && options.logger)) {
     app.use(logger());
   }
   if (useHelmet) {
@@ -70,7 +92,7 @@ export default function Koalition(options?: KoalitionOptions): Koa {
     }
   }
 
-  if (useEtag) {
+  if (useEtag(options && options.etag)) {
     app.use(conditional());
     app.use(etag());
   }
