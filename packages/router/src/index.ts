@@ -10,6 +10,13 @@ function makeArray<T>(maybeArray: T | T[]): T[] {
   return [maybeArray];
 }
 
+function makePath(path: string): string {
+  if (path.startsWith('/')) {
+    return path;
+  }
+  return `/${path}`;
+}
+
 export interface MatchOptions {
   via?: string | string[];
   name?: string;
@@ -25,7 +32,7 @@ export abstract class BaseRouter<
     const middlewares = this.resolve(actionName);
     const name = (options && options.name) as string;
 
-    this.register(`/${path}`, makeArray(via), middlewares, { name });
+    this.register(makePath(path), makeArray(via), middlewares, { name });
 
     return this;
   }
@@ -125,7 +132,7 @@ export abstract class Router<
 
     for (const [operationName, [via, path]] of Object.entries(actionsMap)) {
       if (this.shouldMapOperation(operationName, options)) {
-        this.map(`${path} => ${resourceName}#${operationName}`, { via });
+        router.map(`${path} => ${resourceName}#${operationName}`, { via });
       }
     }
 
