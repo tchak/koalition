@@ -1,6 +1,13 @@
 import Koalition, { Koa } from '@koalition/app';
+import request from 'supertest';
 
-import { ControllerRouter } from '../src';
+import { ControllerRouter, BaseController } from '../src';
+
+class BooksController extends BaseController {
+  show(): void {
+    this.text('hello world!');
+  }
+}
 
 QUnit.module('Koalition Controller', function (hooks) {
   let app: Koa;
@@ -8,11 +15,15 @@ QUnit.module('Koalition Controller', function (hooks) {
 
   hooks.beforeEach(async function () {
     app = Koalition();
-    router = new ControllerRouter();
+    router = new ControllerRouter({ controllers: [BooksController] });
+    router.resources('books', { only: ['show'] });
     app.use(router.routes());
   });
 
-  QUnit.test('it exists', function (assert) {
+  QUnit.test('it exists', async function (assert) {
     assert.ok(app);
+
+    const response = await request(app.callback()).get('/books/1');
+    assert.equal(response.text, 'hello world!');
   });
 });
