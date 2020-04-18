@@ -1,4 +1,11 @@
-import Koa, { Middleware, Context, ParameterizedContext, Next } from 'koa';
+import Koa, {
+  Middleware,
+  Context,
+  ParameterizedContext,
+  Next,
+  DefaultState,
+  DefaultContext,
+} from 'koa';
 import qs from 'koa-qs';
 
 import bodyParser, { Options as BodyParserOptions } from 'koa-bodyparser';
@@ -9,7 +16,17 @@ import logger from 'koa-logger';
 import etag from 'koa-etag';
 import conditional from 'koa-conditional-get';
 
-export { Koa, Middleware, Context, ParameterizedContext, Next };
+export {
+  Koa,
+  Middleware,
+  Context,
+  ParameterizedContext,
+  Next,
+  DefaultState,
+  DefaultContext,
+};
+
+export * from './server';
 
 export interface ErrorResponse {
   status: number;
@@ -55,9 +72,14 @@ function useEtag(option?: boolean): boolean {
   return !isDevelopment;
 }
 
-export default function Koalition(options?: KoalitionOptions): Koa {
-  const app = new Koa();
-  qs(app);
+export default function Koalition<
+  State = DefaultState,
+  Custom = DefaultContext
+>(options?: KoalitionOptions): Koa<State, Custom> {
+  const app = new Koa<State, Custom>();
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  qs(app as any);
 
   if (options && options.errorHandler) {
     const errorHandler = options.errorHandler;
