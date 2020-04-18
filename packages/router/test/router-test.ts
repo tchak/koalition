@@ -1,4 +1,5 @@
 import Koalition, { Koa } from '@koalition/app';
+import request from 'supertest';
 
 import { Router } from '../src';
 import { Middleware, Context } from 'koa';
@@ -21,10 +22,25 @@ QUnit.module('Koalition Router', function (hooks) {
   hooks.beforeEach(async function () {
     app = Koalition();
     router = new MyRouter();
+    router.map('hello => action');
+    router.map('/hello2 => action2');
+    router.get('/yolo', (ctx) => {
+      ctx.status = 200;
+      ctx.body = 'yolo';
+    });
     app.use(router.routes());
   });
 
-  QUnit.test('it exists', function (assert) {
+  QUnit.test('it exists', async function (assert) {
     assert.ok(app);
+
+    let response = await request(app.callback()).get('/yolo');
+    assert.equal(response.text, 'yolo');
+
+    response = await request(app.callback()).get('/hello');
+    assert.equal(response.text, 'hello action!');
+
+    response = await request(app.callback()).get('/hello2');
+    assert.equal(response.text, 'hello action2!');
   });
 });
