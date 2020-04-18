@@ -15,7 +15,10 @@ export interface MatchOptions {
   name?: string;
 }
 
-export abstract class BaseRouter extends KoaRouter {
+export abstract class BaseRouter<
+  State = unknown,
+  Custom = unknown
+> extends KoaRouter<State, Custom> {
   map(to: string, options?: MatchOptions): this {
     const via = (options && options.via) || 'GET';
     const [path, actionName] = to.split('=>').map((part) => part.trim());
@@ -30,16 +33,20 @@ export abstract class BaseRouter extends KoaRouter {
   abstract resolve(actionName: string): Middleware[];
 }
 
-export interface ResourceRouterOptions extends RouterOptions {
-  router: BaseRouter;
+export interface ResourceRouterOptions<State = unknown, Custom = unknown>
+  extends RouterOptions {
+  router: BaseRouter<State, Custom>;
   resourceName: string;
 }
 
-class ResourceRouter extends BaseRouter {
-  #router: BaseRouter;
+export class ResourceRouter<
+  State = unknown,
+  Custom = unknown
+> extends BaseRouter<State, Custom> {
+  #router: BaseRouter<State, Custom>;
   #resourceName: string;
 
-  constructor(options: ResourceRouterOptions) {
+  constructor(options: ResourceRouterOptions<State, Custom>) {
     super(options);
     this.#router = options.router;
     this.#resourceName = options.resourceName;
@@ -87,15 +94,20 @@ export interface ResourceOptions {
   singleton?: boolean;
 }
 
-export type RouterBlock = (router: ResourceRouter) => void;
+export type RouterBlock<State = unknown, Custom = unknown> = (
+  router: ResourceRouter<State, Custom>
+) => void;
 
-export abstract class Router extends BaseRouter {
+export abstract class Router<
+  State = unknown,
+  Custom = unknown
+> extends BaseRouter<State, Custom> {
   resources(
     resourceName: string,
-    options?: ResourceOptions | RouterBlock,
-    block?: RouterBlock
+    options?: ResourceOptions | RouterBlock<State, Custom>,
+    block?: RouterBlock<State, Custom>
   ): this {
-    const router = new ResourceRouter({
+    const router = new ResourceRouter<State, Custom>({
       router: this,
       resourceName,
       prefix: `/${resourceName}`,
@@ -128,8 +140,8 @@ export abstract class Router extends BaseRouter {
 
   resource(
     resourceName: string,
-    options?: ResourceOptions | RouterBlock,
-    block?: RouterBlock
+    options?: ResourceOptions | RouterBlock<State, Custom>,
+    block?: RouterBlock<State, Custom>
   ): this {
     if (typeof options === 'function') {
       block = options;
