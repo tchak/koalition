@@ -1,0 +1,27 @@
+{
+  "name": "@koalition/main",
+  "private": true,
+  "repository": "https://github.com/tchak/koalition",
+  "author": "Paul Chavard <github@paul.chavard.net>",
+  "license": "MIT",
+  "devDependencies": {
+    "@types/node": "^13.13.0",
+    "@types/qunit": "^2.9.1",
+    "@typescript-eslint/eslint-plugin": "^2.28.0",
+    "@typescript-eslint/parser": "^2.28.0",
+    "eslint-config-prettier": "^6.10.1",
+    "eslint-plugin-prettier": "^3.1.3",
+    "lerna": "^3.20.2",
+    "prettier": "^2.0.4"
+  },
+  "workspaces": [
+    "packages/*"
+  ],
+  "scripts": {
+    "postinstall": "lerna bootstrap",
+    "clean": "lerna run clean",
+    "build": "lerna run build",
+    "test": "lerna run build && lerna run test",
+    "lint": "lerna run lint"
+  }
+}
