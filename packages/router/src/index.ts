@@ -1,7 +1,11 @@
-import { Middleware } from 'koa';
-import KoaRouter, { IRouterOptions as RouterOptions } from 'koa-router';
+import { DefaultState, DefaultContext } from 'koa';
+import KoaRouter, {
+  IRouterOptions as RouterOptions,
+  RouterContext,
+  IMiddleware as Middleware,
+} from 'koa-router';
 
-export { RouterOptions };
+export { RouterOptions, RouterContext, Middleware };
 
 function makeArray<T>(maybeArray: T | T[]): T[] {
   if (Array.isArray(maybeArray)) {
@@ -23,8 +27,8 @@ export interface MatchOptions {
 }
 
 export abstract class BaseRouter<
-  State = unknown,
-  Custom = unknown
+  State = DefaultState,
+  Custom = DefaultContext
 > extends KoaRouter<State, Custom> {
   map(to: string, options?: MatchOptions): this {
     const via = (options && options.via) || 'GET';
@@ -37,18 +41,20 @@ export abstract class BaseRouter<
     return this;
   }
 
-  abstract resolve(actionName: string): Middleware[];
+  abstract resolve(actionName: string): Middleware<State, Custom>[];
 }
 
-export interface ResourceRouterOptions<State = unknown, Custom = unknown>
-  extends RouterOptions {
+export interface ResourceRouterOptions<
+  State = DefaultState,
+  Custom = DefaultContext
+> extends RouterOptions {
   router: BaseRouter<State, Custom>;
   resourceName: string;
 }
 
 export class ResourceRouter<
-  State = unknown,
-  Custom = unknown
+  State = DefaultState,
+  Custom = DefaultContext
 > extends BaseRouter<State, Custom> {
   #router: BaseRouter<State, Custom>;
   #resourceName: string;
@@ -75,7 +81,7 @@ export class ResourceRouter<
     return this;
   }
 
-  resolve(actionName: string): Middleware[] {
+  resolve(actionName: string): Middleware<State, Custom>[] {
     return this.#router.resolve(actionName);
   }
 }
@@ -101,13 +107,13 @@ export interface ResourceOptions {
   singleton?: boolean;
 }
 
-export type RouterBlock<State = unknown, Custom = unknown> = (
+export type RouterBlock<State = DefaultState, Custom = DefaultContext> = (
   router: ResourceRouter<State, Custom>
 ) => void;
 
 export abstract class Router<
-  State = unknown,
-  Custom = unknown
+  State = DefaultState,
+  Custom = DefaultContext
 > extends BaseRouter<State, Custom> {
   resources(
     resourceName: string,

@@ -1,7 +1,7 @@
 import Koalition, { Koa } from '@koalition/app';
 import request from 'supertest';
 
-import { ControllerRouter, BaseController } from '../src';
+import { BaseController, ControllerRouter } from '../src';
 
 class BooksController extends BaseController {
   show(): void {

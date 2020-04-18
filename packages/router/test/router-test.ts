@@ -1,13 +1,12 @@
 import Koalition, { Koa } from '@koalition/app';
 import request from 'supertest';
 
-import { Router } from '../src';
-import { Middleware, Context } from 'koa';
+import { Router, Middleware } from '../src';
 
 class MyRouter extends Router {
   resolve(actionName: string): Middleware[] {
     return [
-      (ctx: Context): void => {
+      (ctx): void => {
         ctx.status = 200;
         ctx.body = `hello ${actionName}!`;
       },
