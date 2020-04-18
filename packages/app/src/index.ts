@@ -6,6 +6,8 @@ import responseTime from 'koa-response-time';
 import helmet from 'koa-helmet';
 import cors, { Options as CorsOptions } from '@koa/cors';
 import logger from 'koa-logger';
+import etag from 'koa-etag';
+import conditional from 'koa-conditional-get';
 
 export interface ErrorResponse {
   status: number;
@@ -18,6 +20,7 @@ export interface KoalitionOptions {
   logger?: boolean;
   helmet?: boolean;
   cors?: boolean | CorsOptions;
+  etag?: boolean;
   bodyParser?: BodyParserOptions;
   errorHandler?: (err: Error) => ErrorResponse;
 }
@@ -49,6 +52,7 @@ export default function Koalition(options?: KoalitionOptions): Koa {
   const useLogger = (options && options.logger) !== false;
   const useHelmet = (options && options.helmet) !== false;
   const useCors = (options && options.cors) !== false;
+  const useEtag = (options && options.etag) !== false;
   const useResponseTime = (options && options.responseTime) !== false;
 
   if (useLogger) {
@@ -64,6 +68,11 @@ export default function Koalition(options?: KoalitionOptions): Koa {
     } else {
       app.use(cors());
     }
+  }
+
+  if (useEtag) {
+    app.use(conditional());
+    app.use(etag());
   }
 
   const bodyParserOptions =
