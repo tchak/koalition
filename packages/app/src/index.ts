@@ -14,12 +14,15 @@ export interface ErrorResponse {
 }
 
 export interface KoalitionOptions {
+  responseTime?: boolean;
   logger?: boolean;
   helmet?: boolean;
   cors?: boolean | CorsOptions;
   bodyParser?: BodyParserOptions;
   errorHandler?: (err: Error) => ErrorResponse;
 }
+
+export { CorsOptions, BodyParserOptions };
 
 const DEFAULT_BODY_PARSER_OPTIONS: BodyParserOptions = {
   enableTypes: ['json'],
@@ -46,6 +49,7 @@ export default function Koalition(options?: KoalitionOptions): Koa {
   const useLogger = (options && options.logger) !== false;
   const useHelmet = (options && options.helmet) !== false;
   const useCors = (options && options.cors) !== false;
+  const useResponseTime = (options && options.responseTime) !== false;
 
   if (useLogger) {
     app.use(logger());
@@ -66,7 +70,9 @@ export default function Koalition(options?: KoalitionOptions): Koa {
     (options && options.bodyParser) || DEFAULT_BODY_PARSER_OPTIONS;
   app.use(bodyParser(bodyParserOptions));
 
-  app.use(responseTime({ hrtime: true }));
+  if (useResponseTime) {
+    app.use(responseTime({ hrtime: true }));
+  }
 
   return app;
 }

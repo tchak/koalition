@@ -20,7 +20,7 @@ QUnit.module('Koalition Router', function (hooks) {
   let router: Router;
 
   hooks.beforeEach(async function () {
-    app = Koalition();
+    app = Koalition({ logger: false });
     router = new MyRouter();
     router.map('hello => action');
     router.map('/hello2 => action2');
